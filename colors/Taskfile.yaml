@@ -1,0 +1,16 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+    silent: true
+  gnuplot:
+    cmds:
+      - cp colors.txt colors.txt.bak
+      - defer: rm colors.txt.bak
+      - colors.py "$@" || mv colors.txt.bak colors.txt

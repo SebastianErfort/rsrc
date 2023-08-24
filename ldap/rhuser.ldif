@@ -1,0 +1,17 @@
+dn: uid=rhuser,ou=People,dc=localnet,dc=com
+objectClass: top
+objectClass: account
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: rhuser
+uid: rhuser
+uidNumber: 9999
+gidNumber: 100
+homeDirectory: /home/rhuser
+loginShell: /bin/bash
+gecos: Red Hat User [Admin (at) RHHost]
+userPassword: {crypt}x
+shadowLastChange: 17058
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7

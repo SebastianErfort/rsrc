@@ -1,0 +1,14 @@
+dn: dc=localnet,dc=com
+objectClass: dcObject
+objectClass: organization
+dc: localnet
+o: localnet
+
+dn: ou=People,dc=localnet,dc=com
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Group,dc=localnet,dc=com
+objectClass: organizationalUnit
+ou: Group
+

@@ -1,0 +1,30 @@
+# vim: ft=yaml
+# See https://taskfile.dev/usage/
+version: "3"
+
+vars:
+  MYVAR1: derp
+  MYVAR2: {sh: whoami} # (ba)sh command substitution
+  MYVAR3: "He was just like '{{.MYVAR1}}'!" # Variable expansion
+  CURRENT_TIME: {{now | date "2006-01-02"}} # Use Go template functions
+
+tasks:
+  noway: # Task name
+    desc: "Hilarious story bro!"
+    cmds:
+    - echo {{.MYVAR3}}
+  whoami:
+    desc: "Tell me who I am!"
+    cmds:
+    - echo {{.MYVAR2}}
+    silent: true # Silence output of task name and cmds
+  whattime:
+    desc: "Tell me the time!"
+    cmds:
+    - echo It is currently {{.CURRENT_TIME}}
+    silent: true # Silence output of task name and cmds
+  build:
+    env:
+      VERSION: latest
+    cmds:
+      - make build $VERSION

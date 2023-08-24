@@ -1,0 +1,31 @@
+colors:
+  Aqua: '#42F2F7'
+  Black: '#000000'
+  BlueSapphire: '#175676'
+  Burgundy: '#6a041d'
+  DarkCyan: '#01868b'
+  ForestGreen: '#007A39'
+  HoneyYellow: '#f2af29'
+  KSUPurple: '#5d2e8c'
+  MaximumPurple: '#822E81'
+  MediumAquamarine: '#4ce0b3'
+  MediumSeaGreen: '#06BA63'
+  MintGreen: '#aef78e'
+  OldMauve: '#561F37'
+  PlumpPurple: '#52489C'
+  PumpkinYellow: '#f6ae2d'
+  Purple: '#531CB3'
+  QuinacridoneMagenta: '#912f56'
+  RoseRed: '#C2095A'
+  TartOrange: '#f64740'
+  TealBlue: '#077188'
+  TiffanyBlue: '#17bebb'
+  UnitedNationsBlue: '#5386E4'
+  White: '#ffffff'
+palettes:
+  thesis:
+  - TealBlue
+  - QuinacridoneMagenta
+  - PumpkinYellow
+  - Purple
+  - MediumSeaGreen
