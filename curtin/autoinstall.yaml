@@ -1,0 +1,144 @@
+---
+apt:
+  primary:
+  - arches:
+    - default
+    uri: http://osmirror.rug.nl/ubuntu/
+  security:
+  - arches:
+    - default
+    uri: http://osmirror.rug.nl/ubuntu/
+  sources:
+    puppetlabs:
+      keyid: 9E61EF26
+      source: deb https://deb.rug.nl/ppa/mirror/apt.puppetlabs.com jammy puppet7
+debconf-selections: 'tzdata tzdata/Areas select Europe
+
+  tzdata tzdata/Zones/Europe select Amsterdam
+
+  tzdata tzdata/Zones/Etc select
+
+  '
+early-commands:
+- curl -s http://129.125.21.130/menudo/sebastian/dev/lwp-setup | tar --no-same-owner
+  -zxC /opt
+- 'bash -e -s << ''EOF''
+
+  . /opt/lwp-setup/util/00source_me
+
+  run-parts --exit-on-error /opt/lwp-setup/early-commands
+
+  EOF
+
+  '
+error-commands:
+- 'bash -e -s << ''EOF''
+
+  . /opt/lwp-setup/util/00source_me
+
+  LWPERROR_ADDR=s.erfort@rug.nl error
+
+  EOF
+
+  '
+identity:
+  hostname: lwp5-install
+  password: $6$HjMNx4qePpU8vJgw$dLh.vNTIoASPRaM8m2r4624Zqgt9HIQ6ah3cI399IZrGS1kY58C60eDIZTOKZLK6pndfBRdoenXfmJ/TcuFir0
+  username: lwp5-install
+late-commands:
+- 'bash -e -s << ''EOF''
+
+  . /opt/lwp-setup/util/00source_me
+
+  /opt/lwp-setup/late-commands/before-chroot
+
+  curtin in-target -t/target -- run-parts --exit-on-error /opt/lwp-setup/chroot-commands
+
+  /opt/lwp-setup/late-commands/after-chroot
+
+  EOF
+
+  '
+locale: en_US.UTF-8
+packages:
+- puppet-agent
+- host
+- postfix
+- debconf-utils
+- exfat-fuse
+refresh-installer:
+  update: true
+shutdown: poweroff
+storage:
+  config:
+  - grub_device: true
+    id: disk-nvme0n1
+    path: /dev/nvme0n1
+    preserve: true
+    ptable: gpt
+    serial: VMware_Virtual_NVMe_Disk_VMware_NVME_0000
+    type: disk
+    wwn: eui.cec25a2cc3bd3563000c2966493e8390
+  - device: disk-nvme0n1
+    flag: linux
+    id: partition-nvme0n1p1
+    number: 1
+    offset: 1048576
+    partition_type: 0fc63daf-8483-4772-8e79-3d69d8477de4
+    path: /dev/nvme0n1p1
+    preserve: true
+    size: 62914560000
+    type: partition
+    wipe: superblock
+  - device: disk-nvme0n1
+    flag: linux
+    id: partition-nvme0n1p2
+    number: 2
+    offset: 62915608576
+    partition_type: 0fc63daf-8483-4772-8e79-3d69d8477de4
+    path: /dev/nvme0n1p2
+    preserve: true
+    size: 524288000
+    type: partition
+    wipe: superblock
+  - fstype: ext4
+    id: format-partition-nvme0n1p1
+    label: lwproot
+    type: format
+    uuid: a9baa912-0310-4e38-a26a-503f47e5d41f
+    volume: partition-nvme0n1p1
+  - fstype: ext4
+    id: format-partition-nvme0n1p2
+    label: lwpvartmp
+    type: format
+    uuid: 5a4b9b57-a0fb-49b4-a2ce-76f6bbfc7969
+    volume: partition-nvme0n1p2
+  - device: format-partition-nvme0n1p1
+    id: mount-partition-nvme0n1p1
+    path: /
+    spec: LABEL=lwproot
+    type: mount
+  - device: format-partition-nvme0n1p2
+    id: mount-partition-nvme0n1p2
+    path: /var/tmp
+    spec: LABEL=lwpvartmp
+    type: mount
+  - device: disk-nvme0n1
+    flag: boot
+    grub_device: true
+    id: part-3
+    size: 549755813
+    type: partition
+  - fstype: vfat
+    id: format-part-3
+    label: boot
+    type: format
+    volume: part-3
+  - device: format-part-3
+    id: mount-part-3
+    path: /boot/efi
+    type: mount
+  swap:
+    size: 2G
+version: 1
+...
