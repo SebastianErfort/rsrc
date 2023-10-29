@@ -12,19 +12,6 @@ function main () {
     done
 }
 
-function yaml-frontmatter_ensure () {
-    # missing YAML frontmatter - create minimum title: filename
-    local title
-    if ! yaml-frontmatter_validate "$1"; then
-        echo "$1"
-        title=${1##*/}
-        title=${title%.md}
-        title=${title//_/ }
-        # sed -i "1i\\---\ntitle: $title\n---\n" "$1" &>/dev/null
-        yq --front-matter=process .title="$title" "$1"
-    fi
-}
-
 function yaml_validate () {
     # Validate YAML syntax using yamllint python package
     local logfile="${0%.*}.log"

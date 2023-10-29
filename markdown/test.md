@@ -1,10 +1,10 @@
 ---
-<!-- Front matter should be untouched -->
 title: LWP5 Autoinstaller aka Unattended Installer
 tags:
   - derp
   - schlerp
 ---
+<!-- Front matter should be untouched -->
 
 ## TODO
 

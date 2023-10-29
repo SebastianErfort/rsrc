@@ -1,0 +1,7 @@
+/* Use like ![[image.png | center | 256]] or ![Photo | center | 256](image.png) */
+/* FIXME Doesn't seem to work! */
+img[alt*="center"] {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

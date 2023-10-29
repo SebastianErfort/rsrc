@@ -1,4 +1,5 @@
 ---
+title: AWK
 tags: [awk, bash]
 refs: ["https://pement.org/awk/awk1line.txt"]
 ---
@@ -27,3 +28,6 @@ info=$(sudo blkid "/dev/$dev" | awk '{
         split($i,arr,/=/); print arr[2]}
       }
  awk '!/^$/{print $0}' myfile }' | tr -d '"')
+
+# Apply changes in-place
+awl -i inplace <awk command>

@@ -1,0 +1,4 @@
+/* See https://forum.obsidian.md/t/hide-files-by-extension/23739/2 */
+.nav-file .nav-file-title:not([data-path$=".md"]) {
+  display: none;
+}

@@ -1,0 +1,6 @@
+.theme-light .img {
+  filter: brightness(1) saturate(100%) invert(100%);
+}
+.theme-dark .img {
+  filter: brightness(0) saturate(100%) invert(100%);
+}

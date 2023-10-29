@@ -1,0 +1,19 @@
+{
+  "baseFontSize": 16,
+  "theme": "obsidian",
+  "enabledCssSnippets": [
+    "enlarge_image_hover",
+    "hide_from_file_explorer",
+    "highlight_md_links",
+    "image_center",
+    "hide_non-markdown",
+    "idea",
+    "blockquote",
+    "callouts",
+    "tags"
+  ],
+  "cssTheme": "Catppuccin",
+  "monospaceFontFamily": "JetBrainsMono Nerd Font Mono",
+  "accentColor": "",
+  "textFontFamily": "Fira Sans"
+}

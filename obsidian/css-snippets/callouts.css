@@ -1,0 +1,12 @@
+/* Use like
+> [!idea] Title
+> Contents
+*/
+.callout[data-callout="idea"] {
+    --callout-color: 111, 163, 109;
+    --callout-icon: lightbulb;
+}
+.callout[data-callout="event"] {
+    --callout-color: 102, 153, 204;
+    --callout-icon: calendar;
+}

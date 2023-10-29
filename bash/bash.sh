@@ -15,10 +15,16 @@ echo ${!fname} # returns thomas by double expansion
 declare -a arr # indexed array
 ${arr[0]} # access entry by index
 "${arr[@]}" # access entire array
-${#arr[@]} # length of array, number of entries
+"${arr[@]:2}" # slice/range from element 2
+"${arr[@]::2}" # slice/range up to, excluding element 2
+${#arr[@]} # length of array, number of elements
 arr+=("el1" "el2") # add elements
-mapfile -t arr < <( my_cmd ) # direct output of command to array
+mapfile -t arr < <(my_cmd) # direct output of command to array
+printf '%s\n' "${arr[@]}" # print array (newline separator)
 declare -A dict # associative array
+dict["one"]=1 # assign/set values
+${var:-$(mycmd)} # define default if variable undefined
+${dir:?} # error if variable is undefined, use for rm -r ${d}/*!
 
 # === Arguments
 $0 # command/script/shell name
@@ -58,3 +64,9 @@ set -o errtrace # Functions and subshells inherit -e (errexit)
 
 # === Keyboard commands
 # ~. # disconnect (stuck) SSH connection
+
+# === Commands (Built-ins)
+# ~~ Strings and stream manipulation ~~
+tr -d '[:blank:]' # delete whitespace from string, preserve linebreaks
+# ~~ Files and Directories ~~
+realpath '<file/dir>' # print (canonical) absolute path

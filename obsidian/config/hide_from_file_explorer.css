@@ -1,0 +1,12 @@
+/*div[data-path$='assets'], 
+div[data-path$='assets'] + div.nav-folder-children 
+{
+	display: none;
+}
+*/
+div[data-path$='.png']{
+	display: none;
+}
+div[data-path$='.pdf']{
+	display: none;
+}
