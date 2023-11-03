@@ -2,6 +2,9 @@
 # DESCRIPTION: functions to process and fix the YAML front matter (in Markdown files)
 # #markdown/frontmatter
 
+UTILDIR="${UTILDIR:-.}"
+. "${UTILDIR}/bash/tools.sh"
+
 function fm_set () {
     # Set key=value in frontmatter of file
     local msg_usage="Usage: ${FUNCNAME[0]} <key> <val> <file>"
@@ -32,9 +35,10 @@ function fm_matchFiles () {
     shift 2
     local dir="${*:-.}"
 
-    declare -ga allfiles
-    find_files allfiles "*.md" "$dir"
-    for f in "${allfiles[@]}"; do
+    [[ -n "${fixfiles[*]}" ]] && unset fixfiles
+    declare -ga fixfiles
+    find_files fixfiles "*.md" "$dir"
+    for f in "${fixfiles[@]}"; do
         if ! $invert && fm_exists "$f"; then
             [[ $(yq -f extract '.'"$key" "$f" 2>/dev/null) == "$val" ]] && files+=("$f")
         else
@@ -44,7 +48,7 @@ function fm_matchFiles () {
         fi
     done
 
-    unset allfiles
+    unset fixfiles
 }
 
 function fm_exists () {
@@ -119,38 +123,57 @@ function fm_fix () {
     local msg_desc="Fix YAML frontmatter (in Markdown files)"
     local msg_usage="Usage: ${FUNCNAME[0]} <path(s)>"
     local msg_options="Options:\n\t-c\tcreate fm if absent"
-    [[ "$1" == "-c" ]] && { CREATE_IF_MISSING=true; shift; }
+    local QUIET CREATE_MISSING
+    [[ "$1" == "-q" || "$1" == "--quiet" ]] && { QUIET=true; shift; } || QUIET=false
+    [[ "$1" == "-c" ]] && { CREATE_MISSING=true; shift; }
+    local -a paths
+    [[ -n "$*" ]] && paths=("$@") || paths=(".")
 
-    declare -ga allfiles # NOTE: unset when done!
-    find_files allfiles "*.md" "$@" # collect files from path arg.s
+    [[ -n "${fixfiles[*]}" ]] && unset fixfiles
+    declare -ga fixfiles # NOTE: unset when done!
+    find_files fixfiles "*.md" "${paths[@]}" # collect files from path arg.s
 
-    echo "Fixing front matter in ${#allfiles[@]} files ..."
-    for f in "${allfiles[@]}"; do
+    ! $QUIET && echo "Fixing front matter in ${#fixfiles[@]} files ..."
+    for f in "${fixfiles[@]}"; do
         echo "$f"
-        [[ "$CREATE_IF_MISSING" == "true" ]] && fm_ensure "$f"
+        [[ "$CREATE_MISSING" == "true" ]] && fm_ensure "$f"
         # defaults
         fm_ensureTitle "$f"
         fm_fix_unquoted "$f"
         fm_fix_tags_format "$f"
     done
+    fm_fix_blockScalars_indent "${paths[@]}"
 
-    unset allfiles
+    # last check frontmatter is valid YAML
+    for f in "${fixfiles[@]}"; do
+        yq -f extract "$f" 2>/dev/null | yamllint - || \
+            { echo "ERROR: invalid YAML front matter in '${f}'"; }
+    done
+
+    unset fixfiles
 }
 
-function find_files () {
-    local msg_usage="Usage: ${FUNCNAME[0]} <global arr name> <file name pattern> <path(s)>"
-    local -a files
-    eval "declare -nl files_return=${1}"
-    local find_pattern="$2"
-    shift 2
-    echo "Searching files ${find_pattern} in path(s) $*"
-    # collect files to be fixed
-    for path in "$@"; do
-        if [[ -f "$path" ]]; then
-            files_return+=("$path")
-        else
-            mapfile -t files < <(find "$path" -name "$find_pattern")
-            files_return+=("${files[@]}")
-        fi
+function fm_fix_blockScalars_indent () {
+    # Fix files with YAML block scalars without indentation of the key's value, e.g.
+    # key: |
+    # value  # should be indented
+    # Why? For some unknown reason performing all Markdown fixes on a whole directory, as opposed
+    # to single files, removes the indentation in YAML block scalars.
+    # What are block scalars? Extended strings, see https://yaml-multiline.info/
+    [[ -n "${allfiles[*]}" ]] && unset allfiles
+    declare -ga allfiles
+    local -a fixfiles
+    grep_files allfiles "*.md" ":\s*[|>]" "$@"
+    YAML_IND=${YAML_IND:-2}
+
+    for f in "${allfiles[@]}"; do
+        fm_exists "$f" && { sed -n '/^---/,/^---/p' "$f" | yamllint - &>/dev/null || fixfiles+=("$f"); }
     done
+    echo "Files requiring fix (${#fixfiles[@]}): ${fixfiles[*]}"
+
+    awk -v indent="$YAML_IND" \
+        -i inplace \
+        -f "$UTILDIR/markdown/wrong_indent_fm.awk" \
+        "${fixfiles[@]}"
+    unset allfiles
 }
