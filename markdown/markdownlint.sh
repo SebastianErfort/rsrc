@@ -7,7 +7,7 @@ function mdl_get_indent () {
 function mdl_find_config () {
     # search markdownlint config file
     # TODO: add common locations
-    if [[ -n "$MDL_CFG" ]]; then
+    if [[ -z "$MDL_CFG" ]]; then
         [[ -f .markdownlint.yaml ]] && echo ".markdownlint.yaml"
     fi
 }

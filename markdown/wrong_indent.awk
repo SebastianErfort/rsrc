@@ -1,4 +1,5 @@
 #!/usr/bin/env awk
+# TODO: apply fixes also to ordered lists
 
 BEGIN {
     # defaults if not set as option -v <var>=<val>

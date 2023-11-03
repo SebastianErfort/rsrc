@@ -35,9 +35,8 @@ function fm_matchFiles () {
     shift 2
     local dir="${*:-.}"
 
-    [[ -n "${fixfiles[*]}" ]] && unset fixfiles
-    declare -ga fixfiles
-    find_files fixfiles "*.md" "$dir"
+    local -a fixfiles
+    mapfile -t fixfiles < <(find_files "*.md" "$dir")
     for f in "${fixfiles[@]}"; do
         if ! $invert && fm_exists "$f"; then
             [[ $(yq -f extract '.'"$key" "$f" 2>/dev/null) == "$val" ]] && files+=("$f")
@@ -47,8 +46,6 @@ function fm_matchFiles () {
             fi
         fi
     done
-
-    unset fixfiles
 }
 
 function fm_exists () {
@@ -79,9 +76,9 @@ function fm_ensureTitle () {
     local title
     if ! fm_exists "$1" || ! fm_get "$1" title >/dev/null; then
         fm_ensure "$1"
-        title="$(basename "${1}")"
-        title=${title%.md}
+        title="$(basename "${1}" | sed 's/\.md//')"
         title=${title//_/ }
+        title="$(camel_case ${title})"
         echo "Setting title: ${title}"
         yq -f process -i ".title=\"${title}\"" "$1"
     fi
@@ -118,6 +115,31 @@ function fm_fix_unquoted () {
     fi
 }
 
+function fm_fix_blockScalars_indent () {
+    # Fix files with YAML block scalars without indentation of the key's value, e.g.
+    # key: |
+    # value  # should be indented
+    # Why? For some unknown reason performing all Markdown fixes on a whole directory, as opposed
+    # to single files, removes the indentation in YAML block scalars.
+    # What are block scalars? Extended strings, see https://yaml-multiline.info/
+    local -a allfiles fixfiles
+    mapfile -t allfiles < <(egrep_files "*.md" ":\s*[|>]" "$@")
+    YAML_IND=${YAML_IND:-2}
+
+    for f in "${allfiles[@]}"; do
+        fm_exists "$f" && { sed -n '/^---/,/^---/p' "$f" | yamllint - &>/dev/null || \
+            fixfiles+=("$f"); }
+    done
+    echo "Files requiring fix (${#fixfiles[@]}): ${fixfiles[*]}"
+
+    if [[ -n "${fixfiles[*]}" ]];  then
+        awk -v indent="$YAML_IND" \
+            -i inplace \
+            -f "$UTILDIR/markdown/wrong_indent_fm.awk" \
+            "${fixfiles[@]}"
+    fi
+}
+
 function fm_fix () {
     # Fix YAML frontmatter (in Markdown files)
     local msg_desc="Fix YAML frontmatter (in Markdown files)"
@@ -129,51 +151,24 @@ function fm_fix () {
     local -a paths
     [[ -n "$*" ]] && paths=("$@") || paths=(".")
 
-    [[ -n "${fixfiles[*]}" ]] && unset fixfiles
-    declare -ga fixfiles # NOTE: unset when done!
-    find_files fixfiles "*.md" "${paths[@]}" # collect files from path arg.s
+    local -a fixfiles
+    mapfile -t fixfiles < <(find_files "*.md" "${paths[@]}") # collect files from path arg.s
 
     ! $QUIET && echo "Fixing front matter in ${#fixfiles[@]} files ..."
     for f in "${fixfiles[@]}"; do
-        echo "$f"
+        # ! $QUIET && echo "$f"
         [[ "$CREATE_MISSING" == "true" ]] && fm_ensure "$f"
         # defaults
         fm_ensureTitle "$f"
         fm_fix_unquoted "$f"
         fm_fix_tags_format "$f"
     done
+    echo "* Front matter: fixing block scalar indentation"
     fm_fix_blockScalars_indent "${paths[@]}"
 
     # last check frontmatter is valid YAML
     for f in "${fixfiles[@]}"; do
-        yq -f extract "$f" 2>/dev/null | yamllint - || \
+        yq -f extract "$f" 2>/dev/null | yamllint - &>/dev/null || \
             { echo "ERROR: invalid YAML front matter in '${f}'"; }
     done
-
-    unset fixfiles
-}
-
-function fm_fix_blockScalars_indent () {
-    # Fix files with YAML block scalars without indentation of the key's value, e.g.
-    # key: |
-    # value  # should be indented
-    # Why? For some unknown reason performing all Markdown fixes on a whole directory, as opposed
-    # to single files, removes the indentation in YAML block scalars.
-    # What are block scalars? Extended strings, see https://yaml-multiline.info/
-    [[ -n "${allfiles[*]}" ]] && unset allfiles
-    declare -ga allfiles
-    local -a fixfiles
-    grep_files allfiles "*.md" ":\s*[|>]" "$@"
-    YAML_IND=${YAML_IND:-2}
-
-    for f in "${allfiles[@]}"; do
-        fm_exists "$f" && { sed -n '/^---/,/^---/p' "$f" | yamllint - &>/dev/null || fixfiles+=("$f"); }
-    done
-    echo "Files requiring fix (${#fixfiles[@]}): ${fixfiles[*]}"
-
-    awk -v indent="$YAML_IND" \
-        -i inplace \
-        -f "$UTILDIR/markdown/wrong_indent_fm.awk" \
-        "${fixfiles[@]}"
-    unset allfiles
 }
