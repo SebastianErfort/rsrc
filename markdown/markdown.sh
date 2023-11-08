@@ -22,18 +22,33 @@ function md_fix_tagLineStart () {
     # find lines starting with tag #... and prepend with text as some Markdown parsers
     # interpret this as headings
     local -a fixfiles
-    mapfile -t fixfiles < <(eegrep_files '*.md' '^#[a-z]' "$@")
+    mapfile -t fixfiles < <(egrep_files '*.md' '^#[a-z]' "$@")
 
     for f in "${fixfiles[@]}"; do
         sed -i '/^#[a-zA-Z]/s/./Tags: &/' "$f"
     done
 }
 
+function md_fix_noTabs () {
+    local -a fixfiles
+    mapfile -t fixfiles < <(find_files "*.md" "$@")
+    mapfile -t fixfiles < <(grep -l -P '\t' "${fixfiles[@]}")
+    if [[ "${#fixfiles[@]}" -gt 0 ]]; then
+        echo "* replacing tabs by spaces in ${#fixfiles[@]} file(s) ..."
+        sed -i "s/\t/$(printf "%${MD_IND}s")/g" "${fixfiles[@]}"
+    fi
+}
+
 function md_fix () {
+    echo "Fixing Markdown body"
+
+    md_fix_noTabs "$@"
+
     # linters with fix function don't reindent underindented list items well
-    echo "Fixing list indentation"
+    echo "* fixing list indentation"
     md_fix_listIndent "$@"
-    echo "Fixing lines starting with tag #..."
+
+    echo "* fixing lines starting with tag #..."
     md_fix_tagLineStart "$@"
 
     # use fix functionality of [markdownlint-cli](https://github.com/igorshubovych/markdownlint-cli)
@@ -48,7 +63,6 @@ function md_fix () {
     fi
 
     # front matter fixes, see frontmatter.sh
-    echo "Fixing YAML front matter"
     fm_fix "$@"
 }
 
