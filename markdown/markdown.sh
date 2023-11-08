@@ -54,6 +54,7 @@ function md_fix () {
     # use fix functionality of [markdownlint-cli](https://github.com/igorshubovych/markdownlint-cli)
     # TODO: ensure passing paths to markdownlint works as expected
     if which markdownlint &>/dev/null; then
+        echo "* markdownlint fixes ..."
         mdl_log=markdownlint.log
         markdownlint $MDL_CFG -o "$mdl_log" -f "$@"
         [[ $(wc -l "$mdl_log" 2>/dev/null | awk '{print $1}') -eq 0 ]] && rm markdownlint.log || \

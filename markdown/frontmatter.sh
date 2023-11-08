@@ -79,14 +79,15 @@ function fm_ensureTitle () {
         title="$(basename "${1}" | sed 's/\.md//')"
         title=${title//_/ }
         title="$(camel_case ${title})"
-        echo "Setting title: ${title}"
+        echo "** setting title: ${title}"
         yq -f process -i ".title=\"${title}\"" "$1"
     fi
 }
 
 function fm_fix_tags_format () {
     # fix format of frontmatter tags: use array
-    # Explanation: Obsidian for example accepts tags as space-separated string, others (e.g. MkDocs) require an array
+    # Explanation: Obsidian for example accepts tags as space-separated string, others (e.g. MkDocs)
+    # require an array
     # #markdown/frontmatter
     local msg_usage="Usage: ${FUNCNAME[0]} <file>"
     grep -qi 'tags:\s\+[a-z]' "$1" && sed -i '/^tags:/s/\s\+/\n  - /g' "$1"
@@ -130,9 +131,9 @@ function fm_fix_blockScalars_indent () {
         fm_exists "$f" && { sed -n '/^---/,/^---/p' "$f" | yamllint - &>/dev/null || \
             fixfiles+=("$f"); }
     done
-    echo "Files requiring fix (${#fixfiles[@]}): ${fixfiles[*]}"
 
     if [[ -n "${fixfiles[*]}" ]];  then
+        echo "Fixing block scalar indentation in ${#fixfiles[@]} file(s) ..."
         awk -v indent="$YAML_IND" \
             -i inplace \
             -f "$UTILDIR/markdown/wrong_indent_fm.awk" \
@@ -154,19 +155,20 @@ function fm_fix () {
     local -a fixfiles
     mapfile -t fixfiles < <(find_files "*.md" "${paths[@]}") # collect files from path arg.s
 
-    ! $QUIET && echo "Fixing front matter in ${#fixfiles[@]} files ..."
+    ! $QUIET && echo "Fixing YAML front matter in ${#fixfiles[@]} file(s) ..."
     for f in "${fixfiles[@]}"; do
-        # ! $QUIET && echo "$f"
+        ! $QUIET && echo "* file '${f}'"
         [[ "$CREATE_MISSING" == "true" ]] && fm_ensure "$f"
         # defaults
         fm_ensureTitle "$f"
         fm_fix_unquoted "$f"
         fm_fix_tags_format "$f"
     done
-    echo "* Front matter: fixing block scalar indentation"
+    echo "* fixing block scalar indentation"
     fm_fix_blockScalars_indent "${paths[@]}"
 
     # last check frontmatter is valid YAML
+    echo "* linting YAML front matter"
     for f in "${fixfiles[@]}"; do
         yq -f extract "$f" 2>/dev/null | yamllint - &>/dev/null || \
             { echo "ERROR: invalid YAML front matter in '${f}'"; }
