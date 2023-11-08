@@ -23,7 +23,7 @@ BEGIN {
     ind_curr_was = length($0) - length(l) # current indentation
 
     if ( /^\S+/ ) {
-        if ( !/^\s*[-+*]/ ) { lst = 0 } # exited list
+        if ( !/^\s*[-+*]/ && !/^\s*[1-9]\./ ) { lst = 0 } # exited list
         lvl = 0; ind_lvl = 0
         ind_curr_is = 0 ; ind_prev_was = 0; ind_prev_is = 0; ind_prev_li_was = 0
     }
@@ -32,8 +32,15 @@ BEGIN {
         # Anything but a code block's content
         if ( cb%2 != 1 || /```/ ) {
             fixed = 1
-            if ( /^\s*[-+*]/ ) { # new list item
+            if ( /^\s*[-+*]/ || /^\s*[1-9]\./ ) { # new list item
                 lst = 1
+                if ( /^\s*[-+*]/ ) { # unordered list
+                    # lst_type = ul
+                    lst_ind = 2 # +2 for `- `
+                } else {             # ordered list
+                    # list_type = ol
+                    lst_ind = 3 # +3 for `x. `
+                }
                 # TODO: clean up ugly quick bodge ind_prev_li_was
                 ind_diff = ind_curr_was - ind_prev_li_was
                 if ( ind_diff > 0 ) { lvl++ }
@@ -46,9 +53,9 @@ BEGIN {
                 ind_diff = ind_curr_was - ind_prev_was
                 if ( lst ) {
                     if ( ind_diff < 0 ) { # still in list, but back to outer level
-                        lvl = int( (ind_curr_was - 2) / indent_guess )
+                        lvl = int( (ind_curr_was - lst_ind) / indent_guess )
                     }
-                    ind_curr_is = ind_lvl + 2 # +2 for `- `
+                    ind_curr_is = ind_lvl + lst_ind
                 } else {
                     ind_curr_is = ind_lvl
                 }

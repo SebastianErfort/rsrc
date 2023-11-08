@@ -23,7 +23,7 @@ function find_files () {
     printf "%s\n" "${allfiles[@]}" | sort -u
 }
 
-function eegrep_files () {
+function egrep_files () {
     msg_usage="Usage: ${FUNCNAME[0]} <file name glob> <grep pattern> <path(s)>"
     (( $# < 3 )) && { echo "ERROR. ${msg_usage}"; return 2; }
     local fn_glob="$1" pattern="$2"
