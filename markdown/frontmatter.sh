@@ -155,17 +155,18 @@ function fm_fix () {
     local -a fixfiles
     mapfile -t fixfiles < <(find_files "*.md" "${paths[@]}") # collect files from path arg.s
 
-    ! $QUIET && echo "Fixing YAML front matter in ${#fixfiles[@]} file(s) ..."
+    echo "* fixing block scalar indentation"
+    fm_fix_blockScalars_indent "${paths[@]}"
+
+    echo "Fixing YAML front matter in ${#fixfiles[@]} file(s) ..."
     for f in "${fixfiles[@]}"; do
         ! $QUIET && echo "* file '${f}'"
         [[ "$CREATE_MISSING" == "true" ]] && fm_ensure "$f"
         # defaults
-        fm_ensureTitle "$f"
         fm_fix_unquoted "$f"
         fm_fix_tags_format "$f"
+        fm_ensureTitle "$f"
     done
-    echo "* fixing block scalar indentation"
-    fm_fix_blockScalars_indent "${paths[@]}"
 
     # last check frontmatter is valid YAML
     echo "* linting YAML front matter"

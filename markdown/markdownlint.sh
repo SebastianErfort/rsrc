@@ -9,5 +9,6 @@ function mdl_find_config () {
     # TODO: add common locations
     if [[ -z "$MDL_CFG" ]]; then
         [[ -f .markdownlint.yaml ]] && echo ".markdownlint.yaml"
+        [[ -f markdownlint.yaml ]] && echo "markdownlint.yaml"
     fi
 }

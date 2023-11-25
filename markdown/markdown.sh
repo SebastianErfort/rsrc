@@ -14,8 +14,8 @@ MDL_CFG="${MDL_CFG:-$(mdl_find_config)}"
 MD_IND="$(mdl_get_indent)"
 
 function md_fix_listIndent () {
-    awk -i inplace -v indent="$MD_IND" -f "${UTILDIR}/markdown/wrong_indent.awk" \
-        "$(find_files "*.md" "$@")"
+    mapfile -t mdfiles < <(find_files "*.md" "$@")
+    awk -i inplace -v indent="$MD_IND" -f "${UTILDIR}/markdown/wrong_indent.awk" "${mdfiles[@]}"
 }
 
 function md_fix_tagLineStart () {
