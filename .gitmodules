@@ -4,3 +4,6 @@
 [submodule "revealjs/revealjs_markdown_template_RUG"]
 	path = revealjs/revealjs_markdown_template_RUG
 	url = git@github.com:SebastianErfort/revealjs_markdown_template_RUG.git
+[submodule "markdown"]
+	path = markdown
+	url = git@gitlab.com:treetanium1/resources/markdown.git

@@ -1,0 +1,1 @@
+`=(join(this.related, " | "))`

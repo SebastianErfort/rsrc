@@ -1,6 +1,0 @@
-Number   Name       Description
-1        Riker      Will
-3        Morgan     Narrator_of_the_Universe
-7        Snowwhite  Disney_Princess
-69       Dude       Bill&Ted
-420      Snoop      DoggyDog
