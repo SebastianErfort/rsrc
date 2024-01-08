@@ -7,3 +7,7 @@
 [submodule "markdown"]
 	path = markdown
 	url = git@gitlab.com:treetanium1/resources/markdown.git
+[submodule "bash"]
+	path = bash
+	url = git@gitlab.com:treetanium1/resources/bash.git
+	branch = main
